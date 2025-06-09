@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "276763985365",
+    "project_id": "kongossa-d1442",
+    "storage_bucket": "kongossa-d1442.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:276763985365:android:30f5a5562d88ad5f0da95c",
+        "android_client_info": {
+          "package_name": "com.example.kongossaapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5XMDkrZErIy6LYJryAwGqfDecgyjZ4qw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
