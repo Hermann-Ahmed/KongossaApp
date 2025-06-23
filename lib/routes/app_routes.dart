@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:kongossa/views/bottom_bar/bottom_bar_view.dart';
+import 'package:kongossa/views/createpostScreen.dart';
 import 'package:kongossa/views/forgot_password/code_confirmation_view.dart';
 import 'package:kongossa/views/forgot_password/reset_password_view.dart';
 import 'package:kongossa/views/forgot_password/your_account_view.dart';
@@ -74,6 +75,7 @@ class AppRoutes {
   static const String groupVideoCallView = "/group_video_call_view";
   static const String bottomBarView = "/bottom_bar_view";
   static const String createReelView = "/create_reel_view";
+  static const String createPostView = "/create_post_view";
   static const String reelCaptureView = "/reel_capture_view";
   static const String reelEditView = "/reel_edit_view";
   static const String reelUploadView = "/reel_upload_view";
@@ -122,6 +124,7 @@ class AppRoutes {
     GetPage(name: groupVideoCallView, page: () => GroupVideoCallView()),
     GetPage(name: bottomBarView, page: () => BottomBarView()),
     GetPage(name: createReelView, page: () => CreateReelView()),
+    GetPage(name: createPostView, page: () => AddPostScreen()),
     GetPage(name: reelCaptureView, page: () => ReelCaptureView()),
     GetPage(name: reelEditView, page: () => ReelEditView()),
     GetPage(name: reelUploadView, page: () => ReelUploadView()),

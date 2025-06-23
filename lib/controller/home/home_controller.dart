@@ -14,6 +14,8 @@ class HomeController extends GetxController {
   RxBool isLiked5 = false.obs;
   RxBool isLiked6 = false.obs;
 
+   
+
   void startAnimation() async {
     await Future.delayed(const Duration(seconds: AppSize.size2));
     Get.back();
@@ -103,4 +105,5 @@ class HomeController extends GetxController {
     AppImage.reel1,
     AppImage.reel2,
   ].obs;
+
 }

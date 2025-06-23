@@ -111,6 +111,7 @@ class HomeView extends StatelessWidget {
       ),
       child: Column(
         children: [
+          //story list begin
           SizedBox(
             height: AppSize.appSize100,
             child: ListView.builder(
@@ -160,65 +161,67 @@ class HomeView extends StatelessWidget {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(
-              left: AppSize.appSize20,
-              right: AppSize.appSize20,
-              top: AppSize.appSize24,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children:
-                  List.generate(homeController.labelsList.length, (index) {
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      homeController.selectLabel(index);
-                    },
-                    child: Obx(() => Container(
-                          margin: EdgeInsets.only(
-                              right:
-                                  index == homeController.labelsList.length - 1
-                                      ? 0
-                                      : AppSize.appSize4),
-                          height: AppSize.appSize28,
-                          padding: const EdgeInsets.only(
-                            left: AppSize.appSize12,
-                            right: AppSize.appSize12,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(AppSize.appSize31),
-                            color: homeController.isLabelSelected(index)
-                                ? AppColor.secondaryColor
-                                : AppColor.cardBackgroundColor,
-                          ),
-                          child: Center(
-                            child: Text(
-                              homeController.labelsList[index],
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: AppSize.appSize14,
-                                fontWeight:
-                                    homeController.isLabelSelected(index)
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                fontFamily:
-                                    homeController.isLabelSelected(index)
-                                        ? AppFont.appFontSemiBold
-                                        : AppFont.appFontRegular,
-                                color: homeController.isLabelSelected(index)
-                                    ? AppColor.backgroundColor
-                                    : AppColor.secondaryColor,
-                              ),
-                            ),
-                          ),
-                        )),
-                  ),
-                );
-              }),
-            ),
-          ),
+          //story list end
+          // Padding(
+          //   padding: const EdgeInsets.only(
+          //     left: AppSize.appSize20,
+          //     right: AppSize.appSize20,
+          //     top: AppSize.appSize24,
+          //   ),
+          //   child: Row(
+          //     mainAxisSize: MainAxisSize.max,
+          //     children:
+          //         List.generate(homeController.labelsList.length, (index) {
+          //       return Expanded(
+          //         child: GestureDetector(
+          //           onTap: () {
+          //             homeController.selectLabel(index);
+          //           },
+          //           child: Obx(() => Container(
+          //                 margin: EdgeInsets.only(
+          //                     right:
+          //                         index == homeController.labelsList.length - 1
+          //                             ? 0
+          //                             : AppSize.appSize4),
+          //                 height: AppSize.appSize28,
+          //                 padding: const EdgeInsets.only(
+          //                   left: AppSize.appSize12,
+          //                   right: AppSize.appSize12,
+          //                 ),
+          //                 decoration: BoxDecoration(
+          //                   borderRadius:
+          //                       BorderRadius.circular(AppSize.appSize31),
+          //                   color: homeController.isLabelSelected(index)
+          //                       ? AppColor.secondaryColor
+          //                       : AppColor.cardBackgroundColor,
+          //                 ),
+          //                 child: Center(
+          //                   child: Text(
+          //                     homeController.labelsList[index],
+          //                     overflow: TextOverflow.ellipsis,
+          //                     style: TextStyle(
+          //                       fontSize: AppSize.appSize14,
+          //                       fontWeight:
+          //                           homeController.isLabelSelected(index)
+          //                               ? FontWeight.w600
+          //                               : FontWeight.w400,
+          //                       fontFamily:
+          //                           homeController.isLabelSelected(index)
+          //                               ? AppFont.appFontSemiBold
+          //                               : AppFont.appFontRegular,
+          //                       color: homeController.isLabelSelected(index)
+          //                           ? AppColor.backgroundColor
+          //                           : AppColor.secondaryColor,
+          //                     ),
+          //                   ),
+          //                 ),
+          //               )),
+          //         ),
+          //       );
+          //     }),
+          //   ),
+          // ),
+
           Padding(
             padding: const EdgeInsets.only(
               left: AppSize.appSize20,

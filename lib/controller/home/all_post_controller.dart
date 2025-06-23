@@ -3,6 +3,17 @@ import 'package:get/get.dart';
 import 'package:kongossa/config/app_size.dart';
 import 'package:kongossa/config/app_string.dart';
 
+
+/*
+Changer d’onglet (selectedTabIndex)
+
+Aimer un post (toggleLike)
+
+Suivre un utilisateur (toggleFollow)
+
+Afficher une liste de posts et de reels (données en dur pour l’instant)
+ */
+
 class AllPostController extends GetxController
     with GetSingleTickerProviderStateMixin {
   TabController? tabController;

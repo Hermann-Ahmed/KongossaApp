@@ -63,6 +63,10 @@ newPostOptionsBottomSheet(BuildContext context) {
                       Get.back();
                       Get.toNamed(AppRoutes.createReelView);
                     }
+                    if (index == 1) {
+                      Get.back();
+                      Get.toNamed(AppRoutes.createPostView);
+                    }
                   },
                   child: Obx(() => Container(
                         padding:

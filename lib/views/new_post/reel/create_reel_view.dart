@@ -94,56 +94,56 @@ class CreateReelView extends StatelessWidget {
                   ],
                 ),
               ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  width: AppSize.appSize34,
-                  height: AppSize.appSize273,
-                  margin: const EdgeInsets.only(right: AppSize.appSize20),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppSize.appSize65),
-                    color: AppColor.backgroundColor
-                        .withOpacity(AppSize.appSizePoint5),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Image.asset(
-                        AppIcon.music,
-                        width: AppSize.appSize18,
-                      ),
-                      Image.asset(
-                        AppIcon.flip,
-                        width: AppSize.appSize18,
-                      ),
-                      Image.asset(
-                        AppIcon.speed,
-                        width: AppSize.appSize18,
-                      ),
-                      Image.asset(
-                        AppIcon.timer,
-                        width: AppSize.appSize18,
-                      ),
-                      Image.asset(
-                        AppIcon.magic,
-                        width: AppSize.appSize18,
-                      ),
-                      Image.asset(
-                        AppIcon.setting,
-                        width: AppSize.appSize18,
-                      ),
-                      Image.asset(
-                        AppIcon.filter,
-                        width: AppSize.appSize18,
-                      ),
-                      Image.asset(
-                        AppIcon.flash,
-                        width: AppSize.appSize18,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // Align(
+              //   alignment: Alignment.centerRight,
+              //   child: Container(
+              //     width: AppSize.appSize34,
+              //     height: AppSize.appSize273,
+              //     margin: const EdgeInsets.only(right: AppSize.appSize20),
+              //     decoration: BoxDecoration(
+              //       borderRadius: BorderRadius.circular(AppSize.appSize65),
+              //       color: AppColor.backgroundColor
+              //           .withOpacity(AppSize.appSizePoint5),
+              //     ),
+              //     child: Column(
+              //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //       children: [
+              //         Image.asset(
+              //           AppIcon.music,
+              //           width: AppSize.appSize18,
+              //         ),
+              //         Image.asset(
+              //           AppIcon.flip,
+              //           width: AppSize.appSize18,
+              //         ),
+              //         Image.asset(
+              //           AppIcon.speed,
+              //           width: AppSize.appSize18,
+              //         ),
+              //         Image.asset(
+              //           AppIcon.timer,
+              //           width: AppSize.appSize18,
+              //         ),
+              //         Image.asset(
+              //           AppIcon.magic,
+              //           width: AppSize.appSize18,
+              //         ),
+              //         Image.asset(
+              //           AppIcon.setting,
+              //           width: AppSize.appSize18,
+              //         ),
+              //         Image.asset(
+              //           AppIcon.filter,
+              //           width: AppSize.appSize18,
+              //         ),
+              //         Image.asset(
+              //           AppIcon.flash,
+              //           width: AppSize.appSize18,
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

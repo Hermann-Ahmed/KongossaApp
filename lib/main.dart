@@ -7,6 +7,7 @@ import 'package:kongossa/config/app_size.dart';
 import 'package:kongossa/config/app_string.dart';
 import 'package:kongossa/firebase_options.dart';
 import 'package:kongossa/translation/app_translation.dart';
+import 'package:kongossa/views/createpostScreen.dart';
 import 'package:kongossa/views/splash/splash_view.dart';
 
 import 'controller/translation_controller.dart';
