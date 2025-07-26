@@ -7,9 +7,15 @@ import 'package:kongossa/config/app_color.dart';
 import 'package:kongossa/config/app_icon.dart';
 import 'package:kongossa/config/app_image.dart';
 import 'package:kongossa/controller/home/home_controller.dart';
+import 'package:kongossa/controller/status_controller.dart';
+import 'package:kongossa/controller/auth_controller.dart';
 import 'package:kongossa/controller/profile/settings_options/language_controller.dart';
 import 'package:kongossa/model/social_media_post_model.dart';
+import 'package:kongossa/model/status.dart';
+import 'package:kongossa/model/user_model.dart';
 import 'package:kongossa/routes/app_routes.dart';
+import 'package:kongossa/views/home/options/reel/create_status_view.dart';
+import 'package:kongossa/views/home/post/widgets/post_feed_section.dart';
 import 'package:kongossa/views/widget/home/comments_bottom_sheet.dart';
 import 'package:kongossa/views/widget/home/likes_bottom_sheet.dart';
 import 'package:kongossa/views/widget/home/repost_bottom_sheet.dart';
@@ -21,7 +27,10 @@ class HomeView extends StatelessWidget {
   HomeView({Key? key}) : super(key: key);
 
   HomeController homeController = Get.put(HomeController());
+  StatusController statusController = Get.put(StatusController());
   LanguageController languageController = Get.put(LanguageController());
+
+  final AuthController authController = Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {
@@ -110,326 +119,449 @@ class HomeView extends StatelessWidget {
         top: AppSize.appSize28,
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           //story list begin
+          // Doit contenir la liste des gens qui ont mis des stories
           SizedBox(
             height: AppSize.appSize100,
-            child: ListView.builder(
-              shrinkWrap: true,
-              scrollDirection: Axis.horizontal,
-              itemCount: homeController.storyList.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: languageController.selectedLanguageIndex.value ==
-                            AppSize.size2
-                        ? AppSize.appSize0
-                        : AppSize.appSize20,
-                    right: languageController.selectedLanguageIndex.value ==
-                            AppSize.size2
-                        ? AppSize.appSize20
-                        : AppSize.appSize0,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Get.toNamed(AppRoutes.storyFullView);
-                        },
-                        child: Image.asset(
-                          homeController.storyList[index],
-                          width: index == 0
-                              ? AppSize.appSize64
-                              : AppSize.appSize70,
+            child: Obx(() {
+              final currentUserId = statusController.currentUserId;
+
+              if (currentUserId == null) {
+                return const Center(child: Text("Loading user data..."));
+              }
+
+              // Use the pre-computed reactive list of user IDs
+              // This list already contains only users with VALID public statuses (except potentially current user if they have no public ones)
+              final userIdsWithPublicStatus =
+                  statusController.publicStatusUserIds;
+
+              // Build the final list of user IDs to display.
+              // We always want to show "Your story" first if the current user exists.
+              final List<String> displayUserIds = [];
+              displayUserIds
+                  .add(currentUserId); // Always add current user first
+
+              // Add other users' IDs, ensuring we don't duplicate if current user also has public status
+              for (var userId in userIdsWithPublicStatus) {
+                if (userId != currentUserId) {
+                  displayUserIds.add(userId);
+                }
+              }
+
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                shrinkWrap: true,
+                itemCount: displayUserIds.length,
+                itemBuilder: (context, index) {
+                  final userId = displayUserIds[index];
+
+                  // --- Render "Your Story" section first ---
+                  if (userId == currentUserId) {
+                    return Obx(() {
+                      // currentUserStatuses is already filtered by isStatusValid in your current code, which is correct.
+                      final currentUserStatuses = statusController.userStatus
+                          .where((status) => statusController
+                              .isStatusValid(status)) // Correctly filtered!
+                          .toList();
+                      final hasStatus = currentUserStatuses.isNotEmpty;
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSize.appSize10),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                if (hasStatus) {
+                                  Get.toNamed(AppRoutes.storyFullView,
+                                      arguments: {
+                                        'statuses':
+                                            currentUserStatuses, // This is correctly filtered
+                                        'userId': currentUserId,
+                                      });
+                                } else {
+                                  Get.to(() => const StatusCreationView());
+                                }
+                              },
+                              child: Stack(
+                                alignment: Alignment.bottomRight,
+                                children: [
+                                  Container(
+                                    width: AppSize.appSize70,
+                                    height: AppSize.appSize70,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: hasStatus
+                                          ? Border.all(
+                                              color: Colors.blue, width: 3)
+                                          : null,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(40),
+                                      child: Obx(() {
+                                        final currentUser =
+                                            authController.user.value;
+                                        return Image.network(
+                                          hasStatus &&
+                                                  currentUserStatuses
+                                                          .first.type ==
+                                                      'image'
+                                              ? currentUserStatuses
+                                                  .first.contentUrl
+                                              : currentUser?.profileImageUrl ??
+                                                  'https://i.pravatar.cc/300',
+                                          width: AppSize.appSize70,
+                                          height: AppSize.appSize70,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Container(
+                                              width: AppSize.appSize70,
+                                              height: AppSize.appSize70,
+                                              color: Colors.grey[300],
+                                              child: const Icon(Icons.person,
+                                                  size: 30),
+                                            );
+                                          },
+                                        );
+                                      }),
+                                    ),
+                                  ),
+                                  if (!hasStatus)
+                                    Positioned(
+                                      bottom: 4,
+                                      right: 4,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.blue,
+                                          border: Border.all(
+                                              color: Colors.white, width: 2),
+                                        ),
+                                        child: const Icon(Icons.add,
+                                            size: 18, color: Colors.white),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "Votre story",
+                              style: TextStyle(
+                                fontSize: AppSize.appSize14,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: AppFont.appFontRegular,
+                                color: AppColor.secondaryColor,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      Text(
-                        homeController.storyIDList[index],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: AppSize.appSize14,
-                          fontWeight: FontWeight.w400,
-                          fontFamily: AppFont.appFontRegular,
-                          color: AppColor.secondaryColor,
+                      );
+                    });
+                  }
+
+                  // --- Render other users' stories ---
+                  // These statuses are already grouped and filtered by isStatusValid in the controller.
+                  final userStatuses =
+                      statusController.groupedPublicStatusByUser[userId];
+
+                  // Crucially, ensure there are actual statuses to display for this user
+                  if (userStatuses == null || userStatuses.isEmpty) {
+                    return const SizedBox
+                        .shrink(); // Hide if no valid public statuses
+                  }
+
+                  final firstStatus = userStatuses
+                      .first; // This first status is guaranteed to be valid now
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSize.appSize10),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Get.toNamed(
+                              AppRoutes.storyFullView,
+                              arguments: {
+                                'statuses':
+                                    statusController.groupedPublicStatusByUser[userId], // This list is already filtered by isStatusValid
+                                'userId': userId,
+                              },
+                            );
+                          },
+                          child: Container(
+                            width: AppSize.appSize70,
+                            height: AppSize.appSize70,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.blue,
+                                width: 3,
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(40),
+                              child: Image.network(
+                                firstStatus.type == 'image'
+                                    ? firstStatus.contentUrl
+                                    : 'https://i.pravatar.cc/300?u=$userId',
+                                width: AppSize.appSize70,
+                                height: AppSize.appSize70,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    width: AppSize.appSize70,
+                                    height: AppSize.appSize70,
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.person, size: 30),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                        const SizedBox(height: 4),
+                        FutureBuilder<UserModel?>(
+                          future: statusController.getUserInfo(userId),
+                          builder: (context, snapshot) {
+                            return Text(
+                              snapshot.data?.username ?? 'Utilisateur',
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: AppSize.appSize14,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: AppFont.appFontRegular,
+                                color: AppColor.secondaryColor,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            }),
           ),
-          //story list end
+          PostsFeedSection(),
           // Padding(
           //   padding: const EdgeInsets.only(
           //     left: AppSize.appSize20,
           //     right: AppSize.appSize20,
-          //     top: AppSize.appSize24,
+          //     top: AppSize.appSize32,
           //   ),
-          //   child: Row(
-          //     mainAxisSize: MainAxisSize.max,
-          //     children:
-          //         List.generate(homeController.labelsList.length, (index) {
-          //       return Expanded(
-          //         child: GestureDetector(
-          //           onTap: () {
-          //             homeController.selectLabel(index);
-          //           },
-          //           child: Obx(() => Container(
-          //                 margin: EdgeInsets.only(
-          //                     right:
-          //                         index == homeController.labelsList.length - 1
-          //                             ? 0
-          //                             : AppSize.appSize4),
-          //                 height: AppSize.appSize28,
-          //                 padding: const EdgeInsets.only(
-          //                   left: AppSize.appSize12,
-          //                   right: AppSize.appSize12,
-          //                 ),
-          //                 decoration: BoxDecoration(
-          //                   borderRadius:
-          //                       BorderRadius.circular(AppSize.appSize31),
-          //                   color: homeController.isLabelSelected(index)
-          //                       ? AppColor.secondaryColor
-          //                       : AppColor.cardBackgroundColor,
-          //                 ),
-          //                 child: Center(
-          //                   child: Text(
-          //                     homeController.labelsList[index],
-          //                     overflow: TextOverflow.ellipsis,
-          //                     style: TextStyle(
-          //                       fontSize: AppSize.appSize14,
-          //                       fontWeight:
-          //                           homeController.isLabelSelected(index)
-          //                               ? FontWeight.w600
-          //                               : FontWeight.w400,
-          //                       fontFamily:
-          //                           homeController.isLabelSelected(index)
-          //                               ? AppFont.appFontSemiBold
-          //                               : AppFont.appFontRegular,
-          //                       color: homeController.isLabelSelected(index)
-          //                           ? AppColor.backgroundColor
-          //                           : AppColor.secondaryColor,
+          //   child: Column(
+          //     children: List.generate(posts.length, (index) {
+          //       final socialPost = posts[index];
+          //       return Padding(
+          //         padding: const EdgeInsets.only(bottom: AppSize.appSize40),
+          //         child: Column(
+          //           children: [
+          //             Row(
+          //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //               children: [
+          //                 Row(
+          //                   children: [
+          //                     Padding(
+          //                       padding: EdgeInsets.only(
+          //                         right: languageController
+          //                                     .selectedLanguageIndex.value ==
+          //                                 AppSize.size2
+          //                             ? AppSize.appSize0
+          //                             : AppSize.appSize10,
+          //                         left: languageController
+          //                                     .selectedLanguageIndex.value ==
+          //                                 AppSize.size2
+          //                             ? AppSize.appSize10
+          //                             : AppSize.appSize0,
+          //                       ),
+          //                       child: Image.asset(
+          //                         socialPost.profileImage,
+          //                         width: AppSize.appSize36,
+          //                       ),
           //                     ),
-          //                   ),
+          //                     Column(
+          //                       crossAxisAlignment: CrossAxisAlignment.start,
+          //                       children: [
+          //                         Text(
+          //                           socialPost.username,
+          //                           style: const TextStyle(
+          //                             fontSize: AppSize.appSize14,
+          //                             fontWeight: FontWeight.w600,
+          //                             fontFamily: AppFont.appFontSemiBold,
+          //                             color: AppColor.secondaryColor,
+          //                           ),
+          //                         ),
+          //                         Text(
+          //                           socialPost.location,
+          //                           style: const TextStyle(
+          //                             fontSize: AppSize.appSize12,
+          //                             fontWeight: FontWeight.w400,
+          //                             fontFamily: AppFont.appFontRegular,
+          //                             color: AppColor.text2Color,
+          //                           ),
+          //                         ),
+          //                       ],
+          //                     ),
+          //                   ],
           //                 ),
-          //               )),
+          //                 Row(
+          //                   children: [
+          //                     Padding(
+          //                       padding: EdgeInsets.only(
+          //                         right: AppSize.appSize8,
+          //                         left: languageController
+          //                                     .selectedLanguageIndex.value ==
+          //                                 AppSize.size2
+          //                             ? AppSize.appSize8
+          //                             : AppSize.appSize0,
+          //                       ),
+          //                       child: Text(
+          //                         socialPost.timeAgo,
+          //                         style: const TextStyle(
+          //                           fontSize: AppSize.appSize14,
+          //                           fontWeight: FontWeight.w400,
+          //                           fontFamily: AppFont.appFontRegular,
+          //                           color: AppColor.text1Color,
+          //                         ),
+          //                       ),
+          //                     ),
+          //                     Image.asset(
+          //                       AppIcon.more,
+          //                       width: AppSize.appSize20,
+          //                     ),
+          //                   ],
+          //                 ),
+          //               ],
+          //             ),
+          //             Padding(
+          //               padding: const EdgeInsets.only(top: AppSize.appSize12),
+          //               child: Stack(
+          //                 alignment: Alignment.bottomLeft,
+          //                 children: [
+          //                   Image.asset(
+          //                     socialPost.postImage,
+          //                     fit: BoxFit.cover,
+          //                   ),
+          //                   if (socialPost.showTagUserIcon)
+          //                     Padding(
+          //                       padding: const EdgeInsets.only(
+          //                         left: AppSize.appSize10,
+          //                         bottom: AppSize.appSize10,
+          //                       ),
+          //                       child: Image.asset(
+          //                         AppIcon.tagUser,
+          //                         width: AppSize.appSize24,
+          //                       ),
+          //                     ),
+          //                   if (socialPost.showVolumeIcon)
+          //                     Padding(
+          //                       padding: const EdgeInsets.only(
+          //                         right: AppSize.appSize10,
+          //                         bottom: AppSize.appSize10,
+          //                       ),
+          //                       child: Align(
+          //                         alignment: Alignment.bottomRight,
+          //                         child: Image.asset(
+          //                           AppIcon.volume,
+          //                           width: AppSize.appSize24,
+          //                         ),
+          //                       ),
+          //                     ),
+          //                 ],
+          //               ),
+          //             ),
+          //             Padding(
+          //               padding: const EdgeInsets.only(
+          //                   top: AppSize.appSize14, bottom: AppSize.appSize14),
+          //               child: Row(
+          //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //                 children: [
+          //                   _photoOptionWidget(
+          //                     AppIcon.comment,
+          //                     AppSize.appSize22,
+          //                     AppString.comment10k,
+          //                     onTap: () {
+          //                       commentsBottomSheet(context);
+          //                     },
+          //                     onTapText: () {
+          //                       commentsBottomSheet(context);
+          //                     },
+          //                   ),
+          //                   _photoOptionWidget(
+          //                     AppIcon.repost,
+          //                     AppSize.appSize25,
+          //                     AppString.repost15k,
+          //                     onTap: () {
+          //                       repostBottomSheet(context);
+          //                     },
+          //                     onTapText: () {
+          //                       repostBottomSheet(context);
+          //                     },
+          //                   ),
+          //                   Obx(() {
+          //                     bool isLiked = homeController.isLiked.value;
+          //                     return _photoOptionWidget(
+          //                       isLiked ? AppIcon.like : AppIcon.emptyLike,
+          //                       AppSize.appSize26,
+          //                       AppString.likes55k,
+          //                       onTap: () {
+          //                         homeController.toggleLike();
+          //                       },
+          //                       onTapText: () {
+          //                         likesBottomSheet(context);
+          //                       },
+          //                     );
+          //                   }),
+          //                   _photoOptionWidget(AppIcon.share, AppSize.appSize22,
+          //                       AppString.share5k),
+          //                   _photoOptionWidget(AppIcon.save, AppSize.appSize22,
+          //                       AppString.save2k),
+          //                 ],
+          //               ),
+          //             ),
+          //             _customDivider(),
+          //             Padding(
+          //               padding: const EdgeInsets.only(top: AppSize.appSize14),
+          //               child: RichText(
+          //                 text: TextSpan(
+          //                   text: socialPost.profileID,
+          //                   style: const TextStyle(
+          //                     fontSize: AppSize.appSize14,
+          //                     fontWeight: FontWeight.w700,
+          //                     fontFamily: AppFont.appFontBold,
+          //                     color: AppColor.secondaryColor,
+          //                   ),
+          //                   children: [
+          //                     TextSpan(
+          //                       text: socialPost.postDescription,
+          //                       style: const TextStyle(
+          //                         fontSize: AppSize.appSize14,
+          //                         fontWeight: FontWeight.w400,
+          //                         fontFamily: AppFont.appFontRegular,
+          //                         color: AppColor.secondaryColor,
+          //                       ),
+          //                     ),
+          //                   ],
+          //                 ),
+          //               ),
+          //             ),
+          //           ],
           //         ),
           //       );
           //     }),
           //   ),
           // ),
-
-          Padding(
-            padding: const EdgeInsets.only(
-              left: AppSize.appSize20,
-              right: AppSize.appSize20,
-              top: AppSize.appSize32,
-            ),
-            child: Column(
-              children: List.generate(posts.length, (index) {
-                final socialPost = posts[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: AppSize.appSize40),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  right: languageController
-                                              .selectedLanguageIndex.value ==
-                                          AppSize.size2
-                                      ? AppSize.appSize0
-                                      : AppSize.appSize10,
-                                  left: languageController
-                                              .selectedLanguageIndex.value ==
-                                          AppSize.size2
-                                      ? AppSize.appSize10
-                                      : AppSize.appSize0,
-                                ),
-                                child: Image.asset(
-                                  socialPost.profileImage,
-                                  width: AppSize.appSize36,
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    socialPost.username,
-                                    style: const TextStyle(
-                                      fontSize: AppSize.appSize14,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: AppFont.appFontSemiBold,
-                                      color: AppColor.secondaryColor,
-                                    ),
-                                  ),
-                                  Text(
-                                    socialPost.location,
-                                    style: const TextStyle(
-                                      fontSize: AppSize.appSize12,
-                                      fontWeight: FontWeight.w400,
-                                      fontFamily: AppFont.appFontRegular,
-                                      color: AppColor.text2Color,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  right: AppSize.appSize8,
-                                  left: languageController
-                                              .selectedLanguageIndex.value ==
-                                          AppSize.size2
-                                      ? AppSize.appSize8
-                                      : AppSize.appSize0,
-                                ),
-                                child: Text(
-                                  socialPost.timeAgo,
-                                  style: const TextStyle(
-                                    fontSize: AppSize.appSize14,
-                                    fontWeight: FontWeight.w400,
-                                    fontFamily: AppFont.appFontRegular,
-                                    color: AppColor.text1Color,
-                                  ),
-                                ),
-                              ),
-                              Image.asset(
-                                AppIcon.more,
-                                width: AppSize.appSize20,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: AppSize.appSize12),
-                        child: Stack(
-                          alignment: Alignment.bottomLeft,
-                          children: [
-                            Image.asset(
-                              socialPost.postImage,
-                              fit: BoxFit.cover,
-                            ),
-                            if (socialPost.showTagUserIcon)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  left: AppSize.appSize10,
-                                  bottom: AppSize.appSize10,
-                                ),
-                                child: Image.asset(
-                                  AppIcon.tagUser,
-                                  width: AppSize.appSize24,
-                                ),
-                              ),
-                            if (socialPost.showVolumeIcon)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  right: AppSize.appSize10,
-                                  bottom: AppSize.appSize10,
-                                ),
-                                child: Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: Image.asset(
-                                    AppIcon.volume,
-                                    width: AppSize.appSize24,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            top: AppSize.appSize14, bottom: AppSize.appSize14),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _photoOptionWidget(
-                              AppIcon.comment,
-                              AppSize.appSize22,
-                              AppString.comment10k,
-                              onTap: () {
-                                commentsBottomSheet(context);
-                              },
-                              onTapText: () {
-                                commentsBottomSheet(context);
-                              },
-                            ),
-                            _photoOptionWidget(
-                              AppIcon.repost,
-                              AppSize.appSize25,
-                              AppString.repost15k,
-                              onTap: () {
-                                repostBottomSheet(context);
-                              },
-                              onTapText: () {
-                                repostBottomSheet(context);
-                              },
-                            ),
-                            Obx(() {
-                              bool isLiked = homeController.isLiked.value;
-                              return _photoOptionWidget(
-                                isLiked ? AppIcon.like : AppIcon.emptyLike,
-                                AppSize.appSize26,
-                                AppString.likes55k,
-                                onTap: () {
-                                  homeController.toggleLike();
-                                },
-                                onTapText: () {
-                                  likesBottomSheet(context);
-                                },
-                              );
-                            }),
-                            _photoOptionWidget(AppIcon.share, AppSize.appSize22,
-                                AppString.share5k),
-                            _photoOptionWidget(AppIcon.save, AppSize.appSize22,
-                                AppString.save2k),
-                          ],
-                        ),
-                      ),
-                      _customDivider(),
-                      Padding(
-                        padding: const EdgeInsets.only(top: AppSize.appSize14),
-                        child: RichText(
-                          text: TextSpan(
-                            text: socialPost.profileID,
-                            style: const TextStyle(
-                              fontSize: AppSize.appSize14,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: AppFont.appFontBold,
-                              color: AppColor.secondaryColor,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: socialPost.postDescription,
-                                style: const TextStyle(
-                                  fontSize: AppSize.appSize14,
-                                  fontWeight: FontWeight.w400,
-                                  fontFamily: AppFont.appFontRegular,
-                                  color: AppColor.secondaryColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.only(
               left: AppSize.appSize20,

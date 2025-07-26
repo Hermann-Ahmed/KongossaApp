@@ -10,7 +10,7 @@ class NewPostController extends GetxController {
   }
 
   RxList<String> newPostOptionsList = [
-    AppString.createReels,
+    AppString.createStatus,
     // AppString.uploadVideo,
     // AppString.goLive,
     AppString.createPost,

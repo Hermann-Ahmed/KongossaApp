@@ -178,6 +178,7 @@ class AppString {
       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
 
   static const String createReels = "Create reels";
+  static const String createStatus = "Add status";
   static const String uploadVideo = "Upload video";
   static const String goLive = "Go live";
   static const String createPost = "Create post";

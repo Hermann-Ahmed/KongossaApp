@@ -43,6 +43,7 @@ class Post {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'userId': userId,
       'caption': caption,
       'mediaUrls': mediaUrls,

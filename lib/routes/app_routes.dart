@@ -14,10 +14,12 @@ import 'package:kongossa/views/home/messages/messages_chat_view.dart';
 import 'package:kongossa/views/home/messages/messages_view.dart';
 import 'package:kongossa/views/home/messages/video_call/group_video_call_view.dart';
 import 'package:kongossa/views/home/messages/video_call/video_call_ringing_view.dart';
+import 'package:kongossa/views/home/options/reel/create_status_view.dart';
 import 'package:kongossa/views/home/options/reel/reel_full_view.dart';
 import 'package:kongossa/views/home/options/repost/repost_view.dart';
 import 'package:kongossa/views/home/options/story/story_with_message_view.dart';
 import 'package:kongossa/views/home/post/all_post_view.dart';
+import 'package:kongossa/views/home/post/new_post_view.dart';
 import 'package:kongossa/views/home/search/search_view.dart';
 import 'package:kongossa/views/new_post/reel/create_reel_view.dart';
 import 'package:kongossa/views/new_post/reel/reel_capture_view.dart';
@@ -75,6 +77,7 @@ class AppRoutes {
   static const String groupVideoCallView = "/group_video_call_view";
   static const String bottomBarView = "/bottom_bar_view";
   static const String createReelView = "/create_reel_view";
+  static const String createStatusView = "/create_status_view";
   static const String createPostView = "/create_post_view";
   static const String reelCaptureView = "/reel_capture_view";
   static const String reelEditView = "/reel_edit_view";
@@ -123,8 +126,9 @@ class AppRoutes {
     GetPage(name: videoCallView, page: () => VideoCallView()),
     GetPage(name: groupVideoCallView, page: () => GroupVideoCallView()),
     GetPage(name: bottomBarView, page: () => BottomBarView()),
-    GetPage(name: createReelView, page: () => CreateReelView()),
-    GetPage(name: createPostView, page: () => AddPostScreen()),
+    // GetPage(name: createReelView, page: () => CreateReelView()),
+    GetPage(name: createStatusView, page: () => const StatusCreationView()),
+    GetPage(name: createPostView, page: () => const CreatePostScreen()),
     GetPage(name: reelCaptureView, page: () => ReelCaptureView()),
     GetPage(name: reelEditView, page: () => ReelEditView()),
     GetPage(name: reelUploadView, page: () => ReelUploadView()),

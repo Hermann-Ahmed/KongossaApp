@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:kongossa/config/app_color.dart';
 import 'package:kongossa/config/app_size.dart';
 import 'package:kongossa/config/app_string.dart';
+import 'package:kongossa/controller/auth_controller.dart';
 import 'package:kongossa/firebase_options.dart';
 import 'package:kongossa/translation/app_translation.dart';
 import 'package:kongossa/views/createpostScreen.dart';
@@ -22,6 +23,7 @@ void main() async {
 
 Future<void> initTranslation() async {
   await Get.putAsync(() async => AppTranslations());
+  Get.put(AuthController());
 }
 
 class MyApp extends StatelessWidget {

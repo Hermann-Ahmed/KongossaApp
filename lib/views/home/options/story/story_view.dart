@@ -1,15 +1,14 @@
-// ignore_for_file: unrelated_type_equality_checks, must_be_immutable
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kongossa/config/app_color.dart';
-import 'package:kongossa/config/app_string.dart';
+import 'package:kongossa/model/status.dart';
 import 'package:story_view/story_view.dart';
+
 
 class StoryFullView extends StatelessWidget {
   StoryFullView({super.key});
 
-  StoryController controller = StoryController();
+  final StoryController controller = StoryController();
 
   @override
   Widget build(BuildContext context) {
@@ -21,35 +20,18 @@ class StoryFullView extends StatelessWidget {
     );
   }
 
-  //Story full view content
   Widget _buildHighlights() {
-    final List<StoryItem> stories = [
-      StoryItem.inlineImage(
-        url: AppString.story1,
+    final arguments = Get.arguments;
+
+    final List<Status> statuses = arguments['statuses'] ?? [];
+
+    final List<StoryItem> stories = statuses.map<StoryItem>((status) {
+      return StoryItem.inlineImage(
+        url: status.contentUrl, // tu dois avoir ce champ dans ton modèle
         controller: controller,
         roundedTop: false,
-      ),
-      StoryItem.inlineImage(
-        url: AppString.story2,
-        controller: controller,
-        roundedTop: false,
-      ),
-      StoryItem.inlineImage(
-        url: AppString.story3,
-        controller: controller,
-        roundedTop: false,
-      ),
-      StoryItem.inlineImage(
-        url: AppString.story4,
-        controller: controller,
-        roundedTop: false,
-      ),
-      StoryItem.inlineImage(
-        url: AppString.story5,
-        controller: controller,
-        roundedTop: false,
-      ),
-    ];
+      );
+    }).toList();
 
     return StoryView(
       storyItems: stories,
@@ -60,8 +42,8 @@ class StoryFullView extends StatelessWidget {
       onComplete: () {
         Get.back();
       },
-      onVerticalSwipeComplete: (v) {
-        if (v == Direction.down) {
+      onVerticalSwipeComplete: (direction) {
+        if (direction == Direction.down) {
           Get.back();
         }
       },

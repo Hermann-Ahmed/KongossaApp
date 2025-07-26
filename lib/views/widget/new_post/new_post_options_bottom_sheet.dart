@@ -61,7 +61,7 @@ newPostOptionsBottomSheet(BuildContext context) {
                     newPostController.selectItem(index);
                     if (index == 0) {
                       Get.back();
-                      Get.toNamed(AppRoutes.createReelView);
+                      Get.toNamed(AppRoutes.createStatusView);
                     }
                     if (index == 1) {
                       Get.back();

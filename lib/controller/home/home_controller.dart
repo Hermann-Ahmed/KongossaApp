@@ -1,9 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:kongossa/config/app_image.dart';
 import 'package:kongossa/config/app_size.dart';
 import 'package:kongossa/config/app_string.dart';
+import 'package:kongossa/model/status.dart';
+import 'package:kongossa/model/user_model.dart';
 
 class HomeController extends GetxController {
+  final RxMap<String, List<Status>> userStatuses = <String, List<Status>>{}.obs;
+  final RxMap<String, UserModel> userInfoMap = <String, UserModel>{}.obs;
+
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  final String userStatusCollection = 'user_statuses';
+
   Rx<int> selectedLabelIndex = Rx<int>(0);
   RxDouble progress = 0.0.obs;
   RxBool isLiked = false.obs;
@@ -13,8 +23,6 @@ class HomeController extends GetxController {
   RxBool isLiked4 = false.obs;
   RxBool isLiked5 = false.obs;
   RxBool isLiked6 = false.obs;
-
-   
 
   void startAnimation() async {
     await Future.delayed(const Duration(seconds: AppSize.size2));
@@ -62,6 +70,57 @@ class HomeController extends GetxController {
     isLiked6.value = !isLiked6.value;
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    // Charger les statuts des utilisateurs au démarrage
+    loadStatuses();
+  }
+
+  Future<void> loadStatuses() async {
+    try {
+      final userCollections =
+          await firestore.collection(userStatusCollection).get();
+
+      print("User collections found: ${userCollections.docs.length}");
+
+      for (var userDoc in userCollections.docs) {
+        final userId = userDoc.id;
+
+        // Récupérer les statuts de ce user
+        final statusSnapshots = await firestore
+            .collection(userStatusCollection)
+            .doc(userId)
+            .collection('statuses')
+            .orderBy('createdAt', descending: true)
+            .get();
+
+        final statusList = statusSnapshots.docs
+            .map((doc) => Status.fromMap(doc.data()))
+            .toList();
+
+        print("Status for user $userId: ${statusList.length} found");
+
+        if (statusList.isNotEmpty) {
+          userStatuses[userId] = statusList;
+
+          // Charger les infos utilisateur
+          final userSnap =
+              await firestore.collection('users').doc(userId).get();
+
+          if (userSnap.exists) {
+            userInfoMap[userId] = UserModel.fromFirestore(userSnap);
+          }
+        }
+      }
+
+      print("User statuses loaded: ${userStatuses.length}");
+    } catch (e) {
+      print("Erreur lors du chargement des statuts: $e");
+    }
+  }
+
+// Doit contenir la liste des gens qui ont mis des stories
   RxList<String> storyList = [
     AppImage.myStory,
     AppImage.story1,
@@ -75,6 +134,7 @@ class HomeController extends GetxController {
     AppImage.story3,
   ].obs;
 
+  // Doit contenir la liste des noms des gens qui ont mis des stories
   RxList<String> storyIDList = [
     AppString.yourStory,
     AppString.sabsa01,
@@ -105,5 +165,4 @@ class HomeController extends GetxController {
     AppImage.reel1,
     AppImage.reel2,
   ].obs;
-
 }
